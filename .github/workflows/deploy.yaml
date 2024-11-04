@@ -1,0 +1,41 @@
+name: Deployment Workflow
+on:
+  push:
+    branches:
+      - master
+      
+
+jobs:
+  Deployment:
+    if: ${{ github.ref_name == 'master' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Greetings"
+        run: |
+          echo "--- Greetings ----"
+      
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Create version number"
+        run: |
+          echo "APP_VERSION=${RANDOM}" >> $GITHUB_ENV
+
+      - name: checks out the repository
+        uses: actions/checkout@v3
+                     
+
+      - name: "Logs into docker"
+        uses: docker/login-action@v3
+        with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}  
+      
+      - name: "Build the image"
+        run: |
+          echo ${{ env.APP_VERSION }}
+          sudo docker build -t seun007/devopsapp:${{ env.APP_VERSION }} .
+              
+      - name: "Push the image to docker hub" 
+        run: |
+            docker push seun007/devopsapp:${{ env.APP_VERSION }}
